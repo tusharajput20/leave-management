@@ -13,5 +13,9 @@ export function generateToken(payload: object) {
 }
 
 export function verifyToken(token: string) {
-    return jwt.verify(token, JWT_SECRET);
+    return jwt.verify(token, JWT_SECRET) as {
+        id: string;
+        userId: string;
+        role: "ADMIN" | "EMPLOYEE";
+    };
 }
