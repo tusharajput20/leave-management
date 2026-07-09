@@ -15,12 +15,14 @@ async function seedAdmin() {
             userId: "admin",
         });
 
+        const hashedPassword = await hashPassword("Admin@123");
+
         if (existingAdmin) {
-            console.log("Admin already exists.");
+            existingAdmin.password = hashedPassword;
+            await existingAdmin.save();
+            console.log("✅ Admin password updated successfully.");
             return;
         }
-
-        const hashedPassword = await hashPassword("admin123");
 
         const adminUser = new User({
             employeeId: "EMP001",
