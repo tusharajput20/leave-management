@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
-import User from "@/models/User";
 import { verifyToken } from "@/lib/jwt";
 
-export async function GET(request: NextRequest) {
+export async function GET(req: NextRequest) {
     try {
-        await connectDB();
+        const token = req.cookies.get("token")?.value;
 
-        const authHeader = request.headers.get("authorization");
-
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        if (!token) {
             return NextResponse.json(
                 {
                     success: false,
-                    message: "Unauthorized",
                 },
                 {
                     status: 401,
@@ -21,42 +16,25 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        const token = authHeader.split(" ")[1];
-
         const decoded = verifyToken(token);
-
-        const user = await User.findById(decoded.id).select("-password");
-
-        if (!user) {
-            return NextResponse.json(
-                {
-                    success: false,
-                    message: "User not found.",
-                },
-                {
-                    status: 404,
-                }
-            );
-        }
 
         return NextResponse.json(
             {
                 success: true,
-                user,
+                user: decoded,
             },
             {
                 status: 200,
             }
         );
 
-    } catch (error) {
+    } catch {
         return NextResponse.json(
             {
                 success: false,
-                message: "Internal Server Error",
             },
             {
-                status: 500,
+                status: 401,
             }
         );
     }

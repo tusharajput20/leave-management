@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import { z } from "zod";
 import { hashPassword } from "@/lib/password";
+import { verifyToken } from "@/lib/jwt";
 
 const employeeSchema = z.object({
     employeeId: z.string().min(1),
@@ -19,8 +20,36 @@ const employeeSchema = z.object({
     status: z.enum(["ACTIVE", "INACTIVE"]),
 });
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
+        const token = request.cookies.get("token")?.value;
+
+        if (!token) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Unauthorized",
+                },
+                {
+                    status: 401,
+                }
+            );
+        }
+
+        const decoded = verifyToken(token);
+
+        if (decoded.role !== "ADMIN") {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Forbidden",
+                },
+                {
+                    status: 403,
+                }
+            );
+        }
+
         await connectDB();
 
         const employees = await User.find(
@@ -57,8 +86,36 @@ export async function GET() {
     }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
     try {
+        const token = request.cookies.get("token")?.value;
+
+        if (!token) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Unauthorized",
+                },
+                {
+                    status: 401,
+                }
+            );
+        }
+
+        const decoded = verifyToken(token);
+
+        if (decoded.role !== "ADMIN") {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Forbidden",
+                },
+                {
+                    status: 403,
+                }
+            );
+        }
+
         await connectDB();
 
         const body = await request.json();
