@@ -1,10 +1,39 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import User from "@/models/User";
 import Leave from "@/models/Leave";
+import { verifyToken } from "@/lib/jwt";
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
+        const token = req.cookies.get("token")?.value;
+
+        if (!token) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Unauthorized",
+                },
+                {
+                    status: 401,
+                }
+            );
+        }
+
+        const decoded = verifyToken(token);
+
+        if (decoded.role !== "ADMIN") {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Forbidden",
+                },
+                {
+                    status: 403,
+                }
+            );
+        }
+
         await connectDB();
 
         const [

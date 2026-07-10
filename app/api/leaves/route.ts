@@ -23,9 +23,9 @@ export async function POST(request: NextRequest) {
     try {
         await connectDB();
 
-        const authHeader = request.headers.get("authorization");
+        const token = request.cookies.get("token")?.value;
 
-        if (!authHeader?.startsWith("Bearer ")) {
+        if (!token) {
             return NextResponse.json(
                 {
                     success: false,
@@ -36,8 +36,6 @@ export async function POST(request: NextRequest) {
                 }
             );
         }
-
-        const token = authHeader.split(" ")[1];
 
         const decoded = verifyToken(token);
 

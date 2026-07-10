@@ -70,11 +70,10 @@ export async function POST(req: NextRequest) {
             role: user.role,
         });
 
-        return NextResponse.json(
+        const response = NextResponse.json(
             {
                 success: true,
                 message: "Login successful.",
-                token,
                 user: {
                     id: user._id,
                     employeeId: user.employeeId,
@@ -88,6 +87,18 @@ export async function POST(req: NextRequest) {
                 status: 200,
             }
         );
+
+        response.cookies.set({
+            name: "token",
+            value: token,
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            maxAge: 60 * 60 * 24 * 7,
+            path: "/",
+        });
+
+        return response;
     } catch (error) {
         return NextResponse.json(
             {

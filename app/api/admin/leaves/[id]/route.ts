@@ -16,9 +16,9 @@ export async function PATCH(
     try {
         await connectDB();
 
-        const authHeader = request.headers.get("authorization");
+        const token = request.cookies.get("token")?.value;
 
-        if (!authHeader?.startsWith("Bearer ")) {
+        if (!token) {
             return NextResponse.json(
                 {
                     success: false,
@@ -30,9 +30,19 @@ export async function PATCH(
             );
         }
 
-        const token = authHeader.split(" ")[1];
-
         const admin = verifyToken(token);
+
+        if (admin.role !== "ADMIN") {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Forbidden",
+                },
+                {
+                    status: 403,
+                }
+            );
+        }
 
         const body = await request.json();
 

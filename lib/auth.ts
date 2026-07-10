@@ -1,4 +1,8 @@
-export function logout() {
-    localStorage.removeItem("token");
+export async function logout() {
+
+    await fetch("/api/auth/logout", {
+        method: "POST",
+    });
+
     localStorage.removeItem("user");
 }
