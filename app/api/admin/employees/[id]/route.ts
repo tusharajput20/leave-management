@@ -1,10 +1,13 @@
+
 import { NextRequest, NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongodb";
 import { verifyToken } from "@/lib/jwt";
-import { hashPassword } from "@/lib/password";
 import User from "@/models/User";
 
-export async function GET(req: NextRequest) {
+export async function PUT(
+    req: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
     try {
         await connectDB();
 
@@ -36,81 +39,39 @@ export async function GET(req: NextRequest) {
             );
         }
 
-        const employees = await User.find(
-            {},
-            "-password"
-        ).sort({ createdAt: -1 });
-
-        return NextResponse.json({
-            success: true,
-            employees,
-        });
-
-    } catch (error) {
-        console.error(error);
-
-        return NextResponse.json(
-            {
-                success: false,
-                message: "Failed to fetch employees.",
-            },
-            {
-                status: 500,
-            }
-        );
-    }
-}
-
-export async function POST(req: NextRequest) {
-    try {
-        await connectDB();
-
-        const token = req.cookies.get("token")?.value;
-
-        if (!token) {
-            return NextResponse.json(
-                { success: false, message: "Unauthorized" },
-                { status: 401 }
-            );
-        }
-
-        const decoded = verifyToken(token);
-
-        if (decoded.role !== "ADMIN") {
-            return NextResponse.json(
-                { success: false, message: "Forbidden" },
-                { status: 403 }
-            );
-        }
+        const { id } = await params;
 
         const body = await req.json();
 
-        const existing = await User.findOne({
-            $or: [
-                { employeeId: body.employeeId },
-                { userId: body.userId },
-                { email: body.email },
-            ],
-        });
+        const employee = await User.findByIdAndUpdate(
+            id,
+            {
+                firstName: body.firstName,
+                lastName: body.lastName,
+                email: body.email,
+                phone: body.phone,
+                department: body.department,
+                designation: body.designation,
+                role: body.role,
+                status: body.status,
+            },
+            {
+                new: true,
+                runValidators: true,
+            }
+        );
 
-        if (existing) {
+        if (!employee) {
             return NextResponse.json(
                 {
                     success: false,
-                    message: "Employee already exists.",
+                    message: "Employee not found.",
                 },
                 {
-                    status: 400,
+                    status: 404,
                 }
             );
         }
-
-        const hashedPassword = await hashPassword(body.password);
-
-        const employee = await User.create({
-            ...body,
-            password: hashedPassword,
-        });
 
         return NextResponse.json({
             success: true,
@@ -123,7 +84,77 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(
             {
                 success: false,
-                message: "Failed to create employee.",
+                message: "Failed to update employee.",
+            },
+            {
+                status: 500,
+            }
+        );
+    }
+}
+
+export async function DELETE(
+    req: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
+    try {
+        await connectDB();
+
+        const token = req.cookies.get("token")?.value;
+
+        if (!token) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Unauthorized",
+                },
+                {
+                    status: 401,
+                }
+            );
+        }
+
+        const decoded = verifyToken(token);
+
+        if (decoded.role !== "ADMIN") {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Forbidden",
+                },
+                {
+                    status: 403,
+                }
+            );
+        }
+
+        const { id } = await params;
+
+        const employee = await User.findByIdAndDelete(id);
+
+        if (!employee) {
+            return NextResponse.json(
+                {
+                    success: false,
+                    message: "Employee not found.",
+                },
+                {
+                    status: 404,
+                }
+            );
+        }
+
+        return NextResponse.json({
+            success: true,
+            message: "Employee deleted successfully.",
+        });
+    } catch (error) {
+        console.error(error);
+
+        return NextResponse.json(
+            {
+                success: false,
+                message: "Failed to delete employee.",
             },
             {
                 status: 500,
