@@ -43,16 +43,17 @@ export default function EmployeeForm({
                 setFirstName(employee.firstName || "");
                 setLastName(employee.lastName || "");
                 setEmail(employee.email || "");
-                setPhone(employee.phone || "");
+                // If phone is not in the type, try to cast or default
+                setPhone((employee as any).phone || "");
                 setDepartment(employee.department || "");
                 setDesignation(employee.designation || "");
                 setUserId(employee.userId || "");
                 setPassword(""); // clear password field on edit
                 setRole(employee.role || "EMPLOYEE");
                 setStatus(employee.status || "ACTIVE");
-                
+
                 // Format date string for input type="date"
-                const rawDate = employee.joiningDate;
+                const rawDate = (employee as any).joiningDate;
                 if (rawDate) {
                     const d = new Date(rawDate);
                     const formatted = d.toISOString().split("T")[0];
@@ -398,8 +399,8 @@ export default function EmployeeForm({
                             {loading
                                 ? "Saving..."
                                 : isEdit
-                                ? "Update Employee"
-                                : "Create Employee"}
+                                    ? "Update Employee"
+                                    : "Create Employee"}
                         </button>
                     </div>
                 </form>
