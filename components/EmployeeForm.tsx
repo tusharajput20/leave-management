@@ -43,8 +43,7 @@ export default function EmployeeForm({
                 setFirstName(employee.firstName || "");
                 setLastName(employee.lastName || "");
                 setEmail(employee.email || "");
-                // If phone is not in the type, try to cast or default
-                setPhone((employee as any).phone || "");
+                setPhone(employee.phone || "");
                 setDepartment(employee.department || "");
                 setDesignation(employee.designation || "");
                 setUserId(employee.userId || "");
@@ -53,7 +52,7 @@ export default function EmployeeForm({
                 setStatus(employee.status || "ACTIVE");
                 
                 // Format date string for input type="date"
-                const rawDate = (employee as any).joiningDate;
+                const rawDate = employee.joiningDate;
                 if (rawDate) {
                     const d = new Date(rawDate);
                     const formatted = d.toISOString().split("T")[0];

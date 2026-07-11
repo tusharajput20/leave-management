@@ -11,7 +11,7 @@ const updateLeaveSchema = z.object({
 
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         await connectDB();
@@ -60,7 +60,8 @@ export async function PATCH(
             );
         }
 
-        const leave = await Leave.findById(params.id);
+        const { id } = await params;
+        const leave = await Leave.findById(id);
 
         if (!leave) {
             return NextResponse.json(
