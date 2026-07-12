@@ -2,21 +2,30 @@ import mongoose from "mongoose";
 
 const leaveSchema = new mongoose.Schema(
     {
-        employee: {
+        employeeId: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
+            required: true,
+        },
+
+        userId: {
+            type: String,
+            required: true,
+        },
+
+        employeeName: {
+            type: String,
             required: true,
         },
 
         leaveType: {
             type: String,
             enum: [
-                "CASUAL",
-                "SICK",
-                "EARNED",
-                "MATERNITY",
-                "PATERNITY",
-                "UNPAID",
+                "Casual Leave",
+                "Sick Leave",
+                "Earned Leave",
+                "Maternity Leave",
+                "Paternity Leave",
             ],
             required: true,
         },
@@ -31,11 +40,6 @@ const leaveSchema = new mongoose.Schema(
             required: true,
         },
 
-        totalDays: {
-            type: Number,
-            required: true,
-        },
-
         reason: {
             type: String,
             required: true,
@@ -47,30 +51,12 @@ const leaveSchema = new mongoose.Schema(
             enum: ["PENDING", "APPROVED", "REJECTED"],
             default: "PENDING",
         },
-
-        approvedBy: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "User",
-            default: null,
-        },
-
-        approvedAt: {
-            type: Date,
-            default: null,
-        },
-
-        remarks: {
-            type: String,
-            default: "",
-            trim: true,
-        },
     },
     {
         timestamps: true,
     }
 );
 
-const Leave =
-    mongoose.models.Leave || mongoose.model("Leave", leaveSchema);
+const Leave = mongoose.models.Leave || mongoose.model("Leave", leaveSchema);
 
 export default Leave;
