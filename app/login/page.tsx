@@ -22,10 +22,20 @@ export default function LoginPage() {
     const [passwordError, setPasswordError] = useState("");
 
     useEffect(() => {
-        const token = localStorage.getItem("token");
+        const storedUser = localStorage.getItem("user");
 
-        if (token) {
-            router.replace("/admin/dashboard");
+        if (!storedUser) return;
+
+        try {
+            const user = JSON.parse(storedUser);
+
+            if (user.role === "ADMIN") {
+                router.replace("/admin/dashboard");
+            } else {
+                router.replace("/employee/dashboard");
+            }
+        } catch (error) {
+            console.error(error);
         }
     }, [router]);
 
@@ -108,7 +118,12 @@ export default function LoginPage() {
             );
 
             setPassword("");
-            router.push("/admin/dashboard");
+
+            if (result.user.role === "ADMIN") {
+                router.push("/admin/dashboard");
+            } else {
+                router.push("/employee/dashboard");
+            }
 
         } catch (error) {
             console.error(error);
